@@ -20,3 +20,16 @@ def density(r, h, masses=None):
     return density
 
 
+def gas_pressure(densities, internal_energies, gamma=4./3.):
+    """
+    The gas pressure according to GADGET2, i.e.
+
+            P = (gamma - 1) * rho * u
+
+    + gamma has an initial value of 4/3
+    """
+
+    g_minus_1 = gamma - 1
+    return [g_minus_1 * rho * u for rho, u in densities, internal_energies]
+
+
