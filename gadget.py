@@ -17,7 +17,7 @@ def density(r, h, masses=None):
     weights = map(kernel_at_h, r, h)
 
     if masses is not None:
-        density = sum([m*w for m, w in masses, weights])
+        density = sum([m*w for m, w in zip(masses, weights)])
     else:
         density = sum(weights)
 
@@ -59,7 +59,7 @@ def gas_pressure(densities, internal_energies, gamma=4./3.):
     """
 
     g_minus_1 = gamma - 1
-    return [g_minus_1 * rho * u for rho, u in densities, internal_energies]
+    return [g_minus_1 * rho * u for rho, u in zip(densities, internal_energies)]
 
 
 
