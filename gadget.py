@@ -14,7 +14,7 @@ def density(r, h, masses=None):
     
     def kernel_at_h(radius): return kernel(radius, h)
 
-    weights = map(kernel_at_h, r, h)
+    weights = map(kernel_at_h, r)
 
     if masses is not None:
         density = sum([m*w for m, w in zip(masses, weights)])
@@ -49,7 +49,7 @@ def h(r, initial=1., mass=1, eta=0.84, tol=0.01, masses=None):
     return fitted.x[0]
 
 
-def gas_pressure(densities, internal_energies, gamma=4./3.):
+def gas_pressure(density, internal_energy, gamma=4./3.):
     """
     The gas pressure according to GADGET2, i.e.
 
@@ -59,7 +59,5 @@ def gas_pressure(densities, internal_energies, gamma=4./3.):
     """
 
     g_minus_1 = gamma - 1
-    return [g_minus_1 * rho * u for rho, u in zip(densities, internal_energies)]
-
-
+    return g_minus_1 * density * internal_energy
 
