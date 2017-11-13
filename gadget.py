@@ -1,4 +1,3 @@
-import numpy as np
 from scipy.optimize import root
 from sph import kernel
 
@@ -24,7 +23,7 @@ def density(r, h, masses=None):
     return density
 
 
-def h(r, initial=1., mass=1, eta=0.84, tol=0.01, masses=None):
+def h(r, initial=1., mass=1, eta=0.84, tol=None, masses=None):
     """
     Calculates the smoothing length for a particle.
 
@@ -40,11 +39,17 @@ def h(r, initial=1., mass=1, eta=0.84, tol=0.01, masses=None):
         
         return (this_h / (mass * eta)) * dens - 1
 
-    fitted = root(
-        to_reduce,
-        initial,
-        tol=tol,
-    )
+    if tol is not None:
+        fitted = root(
+            to_reduce,
+            initial,
+            tol=tol,
+        )
+    else:
+        fitted = root(
+            to_reduce,
+            initial,
+        )
 
     return fitted.x[0]
 
