@@ -6,7 +6,7 @@ class GadgetData(object):
     Container for the GADGET data and required methods to calculate smoothed
     densities and pressures, based on the GADGET routines.
     """
-    def __init__(self, positions, energies, silent=False):
+    def __init__(self, positions, energies, eta=0.1, silent=False):
         """
         After creation, the properties can be accessed through:
 
@@ -16,18 +16,24 @@ class GadgetData(object):
         """
         self.positions = positions
         self.energies = energies
+        self.eta = eta
         self.kernel = sph.kernel
         
         if not silent: print("Calculating smoothing lengths")
-        self.smoothing_lengths = self.calculate_smoothing_lengths(self.positions)
+        self.smoothing_lengths = self.calculate_smoothing_lengths(
+            self.positions,
+            eta=self.eta
+        )
         if not silent: print("Calculating densities")
-        self.densities = self.calculate_densities(self.positions, self.smoothing_lengths)
+        self.densities = self.calculate_densities(
+            self.positions,
+            self.smoothing_lengths
+        )
         if not silent: print("Calculating pressures")
-        try:
-            self.pressures = self.calculate_pressures(self.densities, self.energies)
-        except:
-            self.pressures = []
-            print("Pressures failed.")
+        self.pressures = self.calculate_pressures(
+            self.densities,
+            self.energies
+        )
 
 
         return
@@ -39,7 +45,7 @@ class GadgetData(object):
         list of positions radii.
         """
 
-        return [r - radius for r in radii]
+        return [abs(r - radius) for r in radii]
     
 
     def calculate_densities(self, positions, smoothing_lengths):
@@ -69,9 +75,11 @@ class GadgetData(object):
         Assumes they all have mass 1.
         """
 
+        def this_h(sep): return gadget.h(sep, eta=eta, tol=tol)
+
         return list(
             map(
-                gadget.h,
+                this_h,
                 [self.separations(r, positions) for r in positions]
             )
         )
