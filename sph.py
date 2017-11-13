@@ -9,7 +9,7 @@ def kernel(r, h):
     """
     factor = r/h
     factor2 = factor * factor
-    prefactor = 8/(pi * h * h * h)
+    prefactor = 1/(0.375 * h)
 
     if factor <= 0.5:
         poly = 1 - 6 * factor2 + 6 * factor2 * factor
