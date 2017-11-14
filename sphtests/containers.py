@@ -103,11 +103,18 @@ class PressureEntropyData(object):
         )
 
         if not silent: print("Minimising to find values of A")
-        self.adiabats = self.minmise_A(
+        self.adiabats = self.minimise_A(
             self.adiabats,
             self.gadget.positions,
-            self.gadget.smoothing_lenghts,
+            self.gadget.smoothing_lengths,
             self.gadget.energies
+        )
+
+        if not silent: print("Calculating smoothed pressures")
+        self.smoothed_pressures = self.pressures(
+            self.gadget.positions,
+            self.adiabats,
+            self.gadget.smoothing_lengths,
         )
 
         return
@@ -120,6 +127,26 @@ class PressureEntropyData(object):
         """
 
         return list(map(pressure_entropy.A, energies, densities))
+
+
+    def pressures(self, r, A, h):
+        """
+        Calculates the smoothed pressures according to Pressure-Entropy,
+        at the positions of each of the particles.
+        """
+
+        sep_between_all = [sph.separations(r, positions) for r in positions]
+        
+        def p_given_A(separations, this_h):
+            return pressure_entropy.pressure(separations, A, this_h)
+
+        return list(
+            map(
+                p_given_A,
+                sep_between_all,
+                h
+            )
+        )
 
 
     def minimise_A(self, A, r, h, energies, tol=0.01):
@@ -152,9 +179,9 @@ class PressureEntropyData(object):
                 
                 difference = sph.diff(old, new)
                 
-                if not self.silent: print("Difference: {}".format(difference))
-
                 old = new.copy()
+
+            if not self.silent: print("Difference: {}".format(difference))
 
         return old
 

@@ -2,7 +2,7 @@ from sphtests.sph import kernel
 from scipy.optimize import root
 
 
-def A(energy, density, gamma=4./3.):
+def A(energy, density, gamma=4./3.):
     """
     The adiabat for the particle.
 
@@ -33,11 +33,11 @@ def pressure(r, A, h, gamma=4./3., masses=None):
     As = map(A_one_over_gamma, A)
 
     if masses is not None:
-        pressure = sum([m*w*a for m, w, a in zip(masses, weights, As)])
+        P = sum([m*w*a for m, w, a in zip(masses, weights, As)])
     else:
-        pressure = sum([w*a for w, a in zip(weights, As)])
+        P = sum([w*a for w, a in zip(weights, As)])
 
-    return pressure
+    return P
 
 
 def A_reduced(r, A, h, energy, initial, index, gamma=4./3., tol=None, masses=None):
@@ -63,9 +63,9 @@ def A_reduced(r, A, h, energy, initial, index, gamma=4./3., tol=None, masses=Non
             A[index] = this_A
 
         P = pressure(r, A, h, gamma, masses)
-        prefactor = (this_A**(gamma_mins_1))/((energy * gamma_minus_1)**gamma)
+        prefactor = (this_A**(gamma_minus_1))/((energy * gamma_minus_1)**gamma)
 
-        return 1 - prefactor * pressure
+        return 1 - prefactor * P
 
     if tol is not None:
         fitted = root(

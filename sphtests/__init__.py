@@ -1,3 +1,3 @@
-from .containers import GadgetData
+from .containers import GadgetData, PressureEntropyData
 
-from sphtests import gadget, sph
+from sphtests import gadget, sph, pressure_entropy
