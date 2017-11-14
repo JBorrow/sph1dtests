@@ -9,7 +9,8 @@ def A(energy, density, gamma=4./3.):
     + energy is the internal energy of the particle
     + density is the density of the particle
     """
-    return (energy/density) * (gamma - 1.)
+    g_minus_1 = gamma - 1.
+    return (energy) * g_minus_1 * (density**g_minus_1) 
 
 
 def pressure(r, A, h, gamma=4./3., masses=None):
@@ -37,7 +38,7 @@ def pressure(r, A, h, gamma=4./3., masses=None):
     else:
         P = sum([w*a for w, a in zip(weights, As)])
 
-    return P
+    return P**gamma
 
 
 def A_reduced(r, A, h, energy, initial, index, gamma=4./3., tol=None, masses=None):
@@ -62,10 +63,10 @@ def A_reduced(r, A, h, energy, initial, index, gamma=4./3., tol=None, masses=Non
         if index != -1:
             A[index] = this_A
 
-        P = pressure(r, A, h, gamma, masses)
-        prefactor = (this_A**(gamma_minus_1))/((energy * gamma_minus_1)**gamma)
+        P_sum = pressure(r, A, h, gamma, masses)
+        P_calc = this_A * ((energy/this_A) * gamma_minus_1)**(gamma/gamma_minus_1)
 
-        return 1 - prefactor * P
+        return 1 - P_sum/P_calc
 
     if tol is not None:
         fitted = root(

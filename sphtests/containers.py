@@ -59,7 +59,7 @@ class GadgetData(object):
         )
 
 
-    def calculate_smoothing_lengths(self, positions, initial=1., eta=0.2, tol=0.01):
+    def calculate_smoothing_lengths(self, positions, initial=1., eta=0.2, tol=None):
         """
         Calculates all of the smoothing lengths for all of the particles given
         in positions.
@@ -124,6 +124,9 @@ class PressureEntropyData(object):
         """
         Calculates the ininitial Adiabats based on the traditional SPH
         calculation of the denstiy.
+
+        + energies are the internal energies
+        + densities are the densities of the particles.
         """
 
         return list(map(pressure_entropy.A, energies, densities))
@@ -133,9 +136,13 @@ class PressureEntropyData(object):
         """
         Calculates the smoothed pressures according to Pressure-Entropy,
         at the positions of each of the particles.
+
+        + r are the particle positions,
+        + A are the particle Adiabats,
+        + h are the smoothing lengths of the particles from GADGETSPH.
         """
 
-        sep_between_all = [sph.separations(r, positions) for r in positions]
+        sep_between_all = [sph.separations(this_r, r) for this_r in r]
         
         def p_given_A(separations, this_h):
             return pressure_entropy.pressure(separations, A, this_h)
@@ -149,7 +156,7 @@ class PressureEntropyData(object):
         )
 
 
-    def minimise_A(self, A, r, h, energies, tol=0.01):
+    def minimise_A(self, A, r, h, energies, tol=1e-7):
         """
         Finds the equlibrium value of A using the Pressure-Entropy SPH
         technique.
