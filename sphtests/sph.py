@@ -22,4 +22,17 @@ def kernel(r, h):
     return prefactor * poly
 
 
+def separations(radius, radii):
+    """
+    Finds the separation between all in the radii list and the radius that is
+    supplied.
+    """
+    return [abs(r - radius) for r in radii]
+
+
+def diff(x, y):
+    """
+    Finds the sum of the absolute difference between x and y.
+    """
+    return sum([abs(i-j) for i, j in zip(x, y)])
 

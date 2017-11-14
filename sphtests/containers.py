@@ -1,4 +1,5 @@
-from sphtests import gadget, sph
+from sphtests import gadget, pressure_entropy, sph
+
 
 class GadgetData(object):
     """
@@ -38,14 +39,6 @@ class GadgetData(object):
         return
 
 
-    def separations(self, radius, radii):
-        """
-        Calculates the interparticle separations between radius and the
-        list of positions radii.
-        """
-
-        return [abs(r - radius) for r in radii]
-    
 
     def calculate_densities(self, positions, smoothing_lengths):
         """
@@ -55,7 +48,7 @@ class GadgetData(object):
         + positions, the positions of the other particles.
         """
 
-        sep_between_all = [self.separations(r, positions) for r in positions]
+        sep_between_all = [sph.separations(r, positions) for r in positions]
 
         return list(
             map(
@@ -79,7 +72,7 @@ class GadgetData(object):
         return list(
             map(
                 this_h,
-                [self.separations(r, positions) for r in positions]
+                [sph.separations(r, positions) for r in positions]
             )
         )
 
@@ -91,4 +84,77 @@ class GadgetData(object):
         """
 
         return list(map(gadget.gas_pressure, densities, energies))
+
+
+class PressureEntropyData(object):
+    """
+    Container object for Pressure-Entropy.
+    """
+    def __init__(self, positions, energies, eta=0.1, silent=False):
+        self.silent = silent
+
+        if not silent: print("Grabbing the GadgetData object")
+        self.gadget = GadgetData(positions, energies, eta, silent)
+
+        if not silent: print("Starting Pressure-Entropy calculation")
+        self.adiabats = self.calculate_adiabats(
+            self.gadget.energies,
+            self.gadget.densities,
+        )
+
+        if not silent: print("Minimising to find values of A")
+        self.adiabats = self.minmise_A(
+            self.adiabats,
+            self.gadget.positions,
+            self.gadget.smoothing_lenghts,
+            self.gadget.energies
+        )
+
+        return
+
+
+    def calculate_adiabats(self, energies, densities):
+        """
+        Calculates the ininitial Adiabats based on the traditional SPH
+        calculation of the denstiy.
+        """
+
+        return list(map(pressure_entropy.A, energies, densities))
+
+
+    def minimise_A(self, A, r, h, energies, tol=0.01):
+        """
+        Finds the equlibrium value of A using the Pressure-Entropy SPH
+        technique.
+
+        + A are the adiabats for each particle
+        + r are the positions of each particle
+        + h are the smoothing lenghts of each particle
+        + energies are the internal energies of each particles
+        + tol is the tolerance between iterations.
+        """
+
+        difference = tol + 1
+        old = A.copy()
+
+        # As each particle's A depends on each other, we must iterate until
+        # convergence in this lazy way.
+        while difference > tol:
+            new = old.copy()
+            # We iterate over each particle and update its A to be the
+            # Equilibrium given the values of its neighbors
+            for index, (this_A, this_h, this_u) in enumerate(zip(old, h, energies)):
+                separations = sph.separations(r[index], r)
+
+                this_A, new = pressure_entropy.A_reduced(
+                    separations, new, this_h, this_u, this_A, index
+                )
+                
+                difference = sph.diff(old, new)
+                
+                if not self.silent: print("Difference: {}".format(difference))
+
+                old = new.copy()
+
+        return old
 
