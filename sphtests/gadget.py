@@ -1,5 +1,5 @@
 from scipy.optimize import root
-from sph import kernel
+from sphtests.sph import kernel
 
 def density(r, h, masses=None):
     """

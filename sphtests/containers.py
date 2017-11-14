@@ -1,5 +1,4 @@
-import gadget
-import sph
+from sphtests import gadget, sph
 
 class GadgetData(object):
     """
