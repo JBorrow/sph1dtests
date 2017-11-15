@@ -10,7 +10,7 @@ def A(energy, density, gamma=4./3.):
     + density is the density of the particle
     """
     g_minus_1 = gamma - 1.
-    return (energy) * g_minus_1 * (density**g_minus_1) 
+    return energy * g_minus_1 / (density**g_minus_1) 
 
 
 def pressure(r, A, h, gamma=4./3., masses=None):
