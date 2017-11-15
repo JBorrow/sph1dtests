@@ -90,7 +90,7 @@ class PressureEntropyData(object):
     """
     Container object for Pressure-Entropy.
     """
-    def __init__(self, positions, energies, eta=0.1, silent=False):
+    def __init__(self, positions, energies, eta=5, silent=False):
         self.silent = silent
 
         if not silent: print("Grabbing the GadgetData object")
@@ -170,11 +170,11 @@ class PressureEntropyData(object):
 
         difference = tol + 1
         old = A.copy()
+        new = old.copy()
 
         # As each particle's A depends on each other, we must iterate until
         # convergence in this lazy way.
         while difference > tol:
-            new = old.copy()
             # We iterate over each particle and update its A to be the
             # Equilibrium given the values of its neighbors
             for index, (this_A, this_h, this_u) in enumerate(zip(old, h, energies)):
@@ -184,9 +184,8 @@ class PressureEntropyData(object):
                     separations, new, this_h, this_u, this_A, index
                 )
                 
-                difference = sph.diff(old, new)
-                
-                old = new.copy()
+            difference = sph.diff(old, new)
+            old = new.copy()
 
             if not self.silent: print("Difference: {}".format(difference))
 
