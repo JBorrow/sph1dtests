@@ -46,17 +46,26 @@ class GadgetData(object):
             self.positions,
             eta=self.eta
         )
+
         if not silent: print("Calculating densities")
         self.densities = self.calculate_densities(
             self.positions,
             self.smoothing_lengths
         )
+
         if not silent: print("Calculating pressures")
         if adiabats is not None:
             self.pressures = self.calculate_pressures_adiabats(
                 self.densities,
                 self.adiabats
             )
+
+            # We now need to update internal energies to match.
+            self.energies = self.calculate_energies(
+                self.adiabats,
+                self.densities
+            )
+            
         else: # We must be using internal energies
             self.pressures = self.calculate_pressures(
                 self.densities,
@@ -123,6 +132,25 @@ class GadgetData(object):
         return list(map(gadget.gas_pressure_adiabat, densities, adiabats))
 
 
+    def calculate_energies(self, adiabats, densities, gamma=4./3.):
+        """
+        Calculates the internal energies of the particles given their
+        densities and adiabats using the thermodynamical relation:
+        
+                u = A rho^(gamma - 1)/(gamma - 1)
+
+        """
+        def u_at_gamma(a, rho): return gadget.internal_energy(a, rho, gamma)
+
+        return list(
+            map(
+                u_at_gamma,
+                adiabats,
+                densities
+            )
+        )
+
+
 class PressureEntropyData(object):
     """
     Container object for Pressure-Entropy.
@@ -171,7 +199,6 @@ class PressureEntropyData(object):
 
         self.silent = silent
         self.positions = positions
-        self.energies = energies
 
         if not silent: print("Grabbing the GadgetData object")
         self.gadget = GadgetData(
@@ -185,6 +212,8 @@ class PressureEntropyData(object):
 
         self.densities = self.gadget.densities
         self.smoothing_lengths = self.gadget.smoothing_lengths
+        self.energies = self.gadget.energies
+        self.adiabats = self.gadget.adiabats
 
         if not silent: print("Starting Pressure-Entropy calculation")
         if adiabats is None:

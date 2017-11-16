@@ -78,3 +78,17 @@ def gas_pressure_adiabat(density, adiabat, gamma=4./3.):
 
     return adiabat * density**gamma
 
+
+def internal_energy(adiabat, density, gamma=4./3.):
+    """
+    The internal energy of a particle given its adiabat and denstiy.
+
+    Computed from the thermodynamic relation:
+        
+            u = A rho^(gamma - 1)/(gamma - 1)
+
+    """
+    g_minus_1 = gamma - 1.
+    return (adiabat/g_minus_1) * density**(g_minus_1)
+
+
