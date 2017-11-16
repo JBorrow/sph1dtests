@@ -43,7 +43,7 @@ Users can also choose their own Kernels. There are two Kernels available with
 this module; the one used in GADGET-2 (re-normalized for 1D use), or the C_2
 kernel used in ANARCHY. They can be used as follows:
 
-```python3
+```python
 import sphtests.sph as sph
 
 data = PressureEntropyData(
@@ -62,7 +62,7 @@ data = PressureEntropyData(
 Users can also define their own kernels. Note that their functions should have
 units of 1/length, and have the following structure:
 
-```python3
+```python
 def my_kernel(r, h):
     """
     + r is the interparticle separation,
