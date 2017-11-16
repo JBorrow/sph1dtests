@@ -1,4 +1,4 @@
-from sphtests.sph import kernel
+from sphtests.sph import gadget_kernel
 from scipy.optimize import root
 
 
@@ -13,7 +13,7 @@ def A(energy, density, gamma=4./3.):
     return energy * g_minus_1 / (density**g_minus_1) 
 
 
-def pressure(r, A, h, gamma=4./3., masses=None):
+def pressure(r, A, h, gamma=4./3., masses=None, kernel=gadget_kernel):
     """
     Calculates the pressure-entropy smoothed pressure (note this is _not_ the
     gas pressure) based on the:
@@ -22,7 +22,8 @@ def pressure(r, A, h, gamma=4./3., masses=None):
     + A, the adiabats of the particles,
     + h, the smoothing length of the particle being considered,
     + gamma of the gas,
-    + masses, the masses of the other particles. If none, assumed to all be 1.
+    + masses, the masses of the other particles. If none, assumed to all be 1,
+    + kernel, a callable with arguents (r, h). Defaults to GADGET.
     """
     
     one_over_gamma = 1./gamma

@@ -1,7 +1,7 @@
 from scipy.optimize import root
-from sphtests.sph import kernel
+from sphtests.sph import gadget_kernel
 
-def density(r, h, masses=None):
+def density(r, h, masses=None, kernel=gadget_kernel):
     """
     Calculates the SPH density from a set of particle separations.
 
@@ -9,6 +9,7 @@ def density(r, h, masses=None):
     + h is the smoothing lengths.
     + masses are the particle masses. If not given, we assume the
       particles are all equally massive with M=1.
+    + kernel, a callable with arguments (r, h). Defaults to GADGET.
     """
     
     def kernel_at_h(radius): return kernel(radius, h)

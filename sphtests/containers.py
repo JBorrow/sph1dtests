@@ -13,7 +13,8 @@ class GadgetData(object):
             adiabats=None,
             eta=5,
             silent=False,
-            gamma=4./3.
+            gamma=4./3.,
+            kernel=sph.gadget_kernel
         ):
         """
         Please specify one of _either_ energies or adiabats.
@@ -168,7 +169,8 @@ class PressureEntropyData(object):
             adiabats=None,
             eta=5,
             silent=False,
-            gamma=4./3.
+            gamma=4./3.,
+            kernel=sph.gadget_kernel
         ):
         """
         + positions are the positions of the particles,
@@ -177,8 +179,9 @@ class PressureEntropyData(object):
                 - energies are the internal energies,
                 - adiabats are the initial adiabats,
         + eta is the kernel-eta,
-        + silent is a boolean, if True it enables printing of information.
-        + gamma is the ratio of specific heats of the gas.
+        + silent is a boolean, if True it enables printing of information,
+        + gamma is the ratio of specific heats of the gas,
+        + kernel is the SPH kernel to use. The default is GADGET's.
 
         This class makes available the following properties:
         + positions,
