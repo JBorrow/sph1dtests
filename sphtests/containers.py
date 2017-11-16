@@ -262,11 +262,10 @@ class PressureEntropyData(object):
         + P are the pressures,
         + gamma of the gas.
         """
+        def smoothed_at_gamma(a, p): return pressure_entropy.smoothed_density(a, p, gamma)
         return list(
             map(
-                pressure_entropy.smoothed_density(
-                    A, P, gamma
-                )
+                smoothed_at_gamma, A, P
             )
         )
 
