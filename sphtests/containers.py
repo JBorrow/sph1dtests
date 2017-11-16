@@ -6,16 +6,38 @@ class GadgetData(object):
     Container for the GADGET data and required methods to calculate smoothed
     densities and pressures, based on the GADGET routines.
     """
-    def __init__(self, positions, energies, eta=0.1, silent=False):
+    def __init__(
+            self,
+            positions,
+            energies=None,
+            adiabats=None,
+            eta=5,
+            silent=False,
+            gamma=4./3.
+        ):
         """
+        Please specify one of _either_ energies or adiabats.
+
         After creation, the properties can be accessed through:
 
         + GadgetData.smoothing_lengths,
         + GadgetData.densities,
         + GadgetData.pressures.
         """
+
+        if adiabats is None and energies is None:
+            raise AttributeError(
+                "You have not provided adiabats or internal energies."
+            )
+        elif adiabats is not None and energies is not None:
+            raise AttributeError(
+                "You have provided _both_ adiabats and energies, please " +\
+                "Only provide one."
+            )
+
         self.positions = positions
         self.energies = energies
+        self.adiabats = adiabats
         self.eta = eta
         self.kernel = sph.kernel
         
@@ -30,10 +52,16 @@ class GadgetData(object):
             self.smoothing_lengths
         )
         if not silent: print("Calculating pressures")
-        self.pressures = self.calculate_pressures(
-            self.densities,
-            self.energies
-        )
+        if adiabats is not None:
+            self.pressures = self.calculate_pressures_adiabats(
+                self.densities,
+                self.adiabats
+            )
+        else: # We must be using internal energies
+            self.pressures = self.calculate_pressures(
+                self.densities,
+                self.energies
+            )
 
 
         return
@@ -86,21 +114,85 @@ class GadgetData(object):
         return list(map(gadget.gas_pressure, densities, energies))
 
 
+    def calculate_pressures_adiabats(self, densities, adiabats, gamma=4./3.):
+        """
+        Calculates the pressures for all of the particles given their
+        densities and adiabats.
+        """
+
+        return list(map(gadget.gas_pressure_adiabat, densities, adiabats))
+
+
 class PressureEntropyData(object):
     """
     Container object for Pressure-Entropy.
     """
-    def __init__(self, positions, energies, eta=5, silent=False):
+    def __init__(
+            self,
+            positions,
+            energies=None,
+            adiabats=None,
+            eta=5,
+            silent=False,
+            gamma=4./3.
+        ):
+        """
+        + positions are the positions of the particles,
+        + energies/adiabats:
+            You must provide either of the following:
+                - energies are the internal energies,
+                - adiabats are the initial adiabats,
+        + eta is the kernel-eta,
+        + silent is a boolean, if True it enables printing of information.
+        + gamma is the ratio of specific heats of the gas.
+
+        This class makes available the following properties:
+        + positions,
+        + energies,
+        + gadget, the GadgetData object that is associated with 
+          the data you have input,
+        + densities, the TSPH (Traditional SPH) densities of the particles,
+        + smoothing_lenghts, the TSPH smoothing lengths of the particles,
+        + adiabats, the PESPH (Pressure-Entropy SPH) minimised adiabats
+          associated with each of the particles,
+        + smootehd_pressures, the PESPH smoothed pressures of the particles,
+        + smoothed_densities, the PESPH smoothed densities of the particles.
+        """
+        
+        if adiabats is None and energies is None:
+            raise AttributeError(
+                "You have not provided adiabats or internal energies."
+            )
+        elif adiabats is not None and energies is not None:
+            raise AttributeError(
+                "You have provided _both_ adiabats and energies, please " +\
+                "Only provide one."
+            )
+
         self.silent = silent
+        self.positions = positions
+        self.energies = energies
 
         if not silent: print("Grabbing the GadgetData object")
-        self.gadget = GadgetData(positions, energies, eta, silent)
+        self.gadget = GadgetData(
+            positions,
+            energies,
+            adiabats,
+            eta,
+            silent,
+            gamma
+        )
+
+        self.densities = self.gadget.densities
+        self.smoothing_lengths = self.gadget.smoothing_lengths
 
         if not silent: print("Starting Pressure-Entropy calculation")
-        self.adiabats = self.calculate_adiabats(
-            self.gadget.energies,
-            self.gadget.densities,
-        )
+        if adiabats is None:
+            # Sort out your adiabats/energies.
+            self.adiabats = self.calculate_adiabats(
+                self.gadget.energies,
+                self.gadget.densities,
+            )
 
         if not silent: print("Minimising to find values of A")
         self.adiabats = self.minimise_A(
@@ -115,6 +207,12 @@ class PressureEntropyData(object):
             self.gadget.positions,
             self.adiabats,
             self.gadget.smoothing_lengths,
+        )
+
+        if not silent: print("Calculating smoothed densities")
+        self.smoothed_densities = self.density_twiddle(
+            self.adiabats,
+            self.smoothed_pressures
         )
 
         return
@@ -152,6 +250,23 @@ class PressureEntropyData(object):
                 p_given_A,
                 sep_between_all,
                 h
+            )
+        )
+
+
+    def density_twiddle(self, A, P, gamma=4./3.):
+        """
+        The smoothed density of the particles.
+
+        + A are the adiabats,
+        + P are the pressures,
+        + gamma of the gas.
+        """
+        return list(
+            map(
+                pressure_entropy.smoothed_density(
+                    A, P, gamma
+                )
             )
         )
 

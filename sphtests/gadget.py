@@ -66,3 +66,15 @@ def gas_pressure(density, internal_energy, gamma=4./3.):
     g_minus_1 = gamma - 1
     return g_minus_1 * density * internal_energy
 
+
+def gas_pressure_adiabat(density, adiabat, gamma=4./3.):
+    """
+    The gas pressure according to the adiabats given, i.e.
+
+            P = A rho^gamma.
+
+    + gamma has an initial value of 4/3.
+    """
+
+    return adiabat * density**gamma
+
