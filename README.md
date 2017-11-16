@@ -37,4 +37,36 @@ data_adiabat = PressureEntropyData(
     adiabats=A,
     eta=eta,
 )
+```
 
+Users can also choose their own Kernels. There are two Kernels available with
+this module; the one used in GADGET-2 (re-normalized for 1D use), or the C_2
+kernel used in ANARCHY. They can be used as follows:
+
+```python3
+import sphtests.sph as sph
+
+data = PressureEntropyData(
+    ...
+    kernel=sph.gadget_kernel,
+)
+
+# or
+
+data = PressureEntropyData(
+    ...
+    kernel=sph.ANARCHY_kernel,
+)
+```
+
+Users can also define their own kernels. Note that their functions should have
+units of 1/length, and have the following structure:
+
+```python3
+def my_kernel(r, h):
+    """
+    + r is the interparticle separation,
+    + h is the smoothing length,
+    """
+    return ...
+```
