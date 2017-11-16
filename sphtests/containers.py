@@ -40,7 +40,7 @@ class GadgetData(object):
         self.energies = energies
         self.adiabats = adiabats
         self.eta = eta
-        self.kernel = sph.kernel
+        self.kernel = kernel
         self.gamma = gamma
         
         if not silent: print("Calculating smoothing lengths")
