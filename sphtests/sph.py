@@ -1,6 +1,6 @@
 from numpy import pi
 
-def kernel(r, h):
+def gadget_kernel(r, h):
     """
     The standard GADGET Kernel, with 
 
@@ -20,6 +20,22 @@ def kernel(r, h):
         poly = 0.
 
     return prefactor * poly
+
+
+def ANARCHY_kernel(r, h):
+    """
+    The kernel from ANARCHY, with
+
+    + r the interparticle separation
+    + h the smoothing length of the particle
+    """
+    factor = r/h
+    prefactor = 3/h
+
+    if factor <= 1:
+        return prefactor * (1 + 4*factor) * (1 - factor)**4
+    else:
+        return 0
 
 
 def separations(radius, radii):
