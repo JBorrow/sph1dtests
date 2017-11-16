@@ -41,6 +41,18 @@ def pressure(r, A, h, gamma=4./3., masses=None):
     return P**gamma
 
 
+def smoothed_density(A, P, gamma=4./3.):
+    """
+    The smoothed density of the particle, according to Pressure-Entropy
+    SPH. This is _not_ the physical density.
+
+    + A is the adiabat of the particle
+    + P is the pressure of the particle
+    + gamma of the gas.
+    """
+    return (P/A)**(1/gamma)
+
+
 def A_reduced(r, A, h, energy, initial, index, gamma=4./3., tol=None, masses=None):
     """
     Calculates the optimum value of A for the particle, with
