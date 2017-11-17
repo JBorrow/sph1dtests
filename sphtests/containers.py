@@ -203,7 +203,7 @@ class PressureEntropyData(object):
         elif adiabats is not None and energies is not None:
             raise AttributeError(
                 "You have provided _both_ adiabats and energies, please " +\
-                "Only provide one."
+                "only provide one."
             )
 
         self.silent = silent
