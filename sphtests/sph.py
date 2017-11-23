@@ -1,4 +1,4 @@
-from numpy import pi
+from numpy import pi, exp, sqrt
 
 def gadget_kernel(r, h):
     """
@@ -7,11 +7,9 @@ def gadget_kernel(r, h):
     + r the interparticle separation
     + h the smoothing length of the particle.
     """
-    print("You're calling the GADGET kernel! Naughty.")
-    raise AttributeError
     factor = r/h
     factor2 = factor * factor
-    prefactor = 1/(0.3725 * h)
+    prefactor = 4/(3 * h)
 
     if factor <= 0.5:
         poly = 1 - 6 * factor2 + 6 * factor2 * factor
@@ -24,22 +22,61 @@ def gadget_kernel(r, h):
     return prefactor * poly
 
 
-def ANARCHY_kernel(r, h):
+def cubic_kernel(r, h):
     """
-    The kernel from ANARCHY, with
+    The cubic kernel from Price, 2012, with
 
     + r the interparticle separation
     + h the smoothing length of the particle
     """
     factor = r/h
-    prefactor = 3/h
+    prefactor = 2/(3 * h)
 
-    if factor <= 1:
-        return prefactor * (1 + 4*factor) * (1 - factor)**4
+    if factor < 1:
+        poly = 0.25 * (2 - factor)**3 - (1 - factor)**3
+    elif factor < 2:
+        poly = 0.25 * (2 - factor)**3
     else:
-        return 0
+        poly = 0.
+
+    return prefactor * poly
 
 
+def quintic_kernel(r, h):
+    """
+    The quntic kernel from Price, 2012, with
+
+    + r the interparticle separation
+    + h the smoothing length of the particle
+    """
+    q = r/h
+    prefactor = 1/(120 * h)
+
+    if q < 1:
+        poly = (3 - q)**5 - 6 * (2 - q)**5 + 15 * (1 - q)**5
+    elif q < 2:
+        poly = (3 - q)**5 - 6 * (2 - q)**5
+    elif q < 3:
+        poly = (3 - q)**5
+    else:
+        poly = 0
+
+    return poly * prefactor
+
+
+def gaussian_kernel(r, h):
+    """
+    A perfect kernel.
+
+    + r the interparticle separation
+    + h the smoothing length of the particle
+    """
+    prefactor = 1/sqrt(2 * pi * h)
+    exponential = exp(-0.5 * (r / h)**2)
+
+    return prefactor * exponential
+
+        
 def separations(radius, radii):
     """
     Finds the separation between all in the radii list and the radius that is
