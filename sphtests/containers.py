@@ -46,13 +46,15 @@ class GadgetData(object):
         if not silent: print("Calculating smoothing lengths")
         self.smoothing_lengths = self.calculate_smoothing_lengths(
             self.positions,
-            eta=self.eta
+            eta=self.eta,
+            kernel=self.kernel
         )
 
         if not silent: print("Calculating densities")
         self.densities = self.calculate_densities(
             self.positions,
-            self.smoothing_lengths
+            self.smoothing_lengths,
+            kernel=self.kernel
         )
 
         if not silent: print("Calculating pressures")
@@ -60,7 +62,7 @@ class GadgetData(object):
             self.pressures = self.calculate_pressures_adiabats(
                 self.densities,
                 self.adiabats,
-                gamma=self.gamma
+                gamma=self.gamma,
             )
 
             # We now need to update internal energies to match.
@@ -74,7 +76,7 @@ class GadgetData(object):
             self.pressures = self.calculate_pressures(
                 self.densities,
                 self.energies,
-                gamma=self.gamma
+                gamma=self.gamma,
             )
 
 
@@ -82,7 +84,7 @@ class GadgetData(object):
 
 
 
-    def calculate_densities(self, positions, smoothing_lengths):
+    def calculate_densities(self, positions, smoothing_lengths, kernel):
         """
         Calculates the density at all of the particle positions.
         
@@ -91,17 +93,18 @@ class GadgetData(object):
         """
 
         sep_between_all = [sph.separations(r, positions) for r in positions]
+        def density_with_kernel(sep, smooth): return gadget.density(sep, smooth, kernel=kernel)
 
         return list(
             map(
-                gadget.density,
+                density_with_kernel,
                 sep_between_all,
-                smoothing_lengths
+                smoothing_lengths,
             )
         )
 
 
-    def calculate_smoothing_lengths(self, positions, initial=1., eta=0.2, tol=None):
+    def calculate_smoothing_lengths(self, positions, initial=1., eta=0.2, tol=None, kernel=None):
         """
         Calculates all of the smoothing lengths for all of the particles given
         in positions.
@@ -109,11 +112,11 @@ class GadgetData(object):
         Assumes they all have mass 1.
         """
 
-        def this_h(sep): return gadget.h(sep, eta=eta, tol=tol)
+        def calc_this_h(sep): return gadget.h(sep, eta=eta, tol=tol, kernel=kernel)
 
         return list(
             map(
-                this_h,
+                calc_this_h,
                 [sph.separations(r, positions) for r in positions]
             )
         )
@@ -209,6 +212,7 @@ class PressureEntropyData(object):
         self.silent = silent
         self.positions = positions
         self.gamma = gamma
+        self.kernel = kernel
 
         if not silent: print("Grabbing the GadgetData object")
         self.gadget = GadgetData(
@@ -217,7 +221,8 @@ class PressureEntropyData(object):
             adiabats,
             eta,
             silent,
-            gamma
+            gamma,
+            kernel
         )
 
         self.densities = self.gadget.densities
@@ -240,7 +245,8 @@ class PressureEntropyData(object):
             self.gadget.positions,
             self.gadget.smoothing_lengths,
             self.gadget.energies,
-            gamma=self.gamma
+            gamma=self.gamma,
+            kernel=self.kernel
         )
 
         if not silent: print("Calculating smoothed pressures")
@@ -248,7 +254,8 @@ class PressureEntropyData(object):
             self.gadget.positions,
             self.adiabats,
             self.gadget.smoothing_lengths,
-            gamma=self.gamma
+            gamma=self.gamma,
+            kernel=self.kernel
         )
 
         if not silent: print("Calculating smoothed densities")
@@ -274,7 +281,7 @@ class PressureEntropyData(object):
         return list(map(A_at_gamma, energies, densities))
 
 
-    def pressures(self, r, A, h, gamma=4./3.):
+    def pressures(self, r, A, h, kernel, gamma=4./3.):
         """
         Calculates the smoothed pressures according to Pressure-Entropy,
         at the positions of each of the particles.
@@ -287,7 +294,7 @@ class PressureEntropyData(object):
         sep_between_all = [sph.separations(this_r, r) for this_r in r]
         
         def p_given_A(separations, this_h):
-            return pressure_entropy.pressure(separations, A, this_h, gamma)
+            return pressure_entropy.pressure(separations, A, this_h, kernel, gamma)
 
         return list(
             map(
@@ -314,7 +321,7 @@ class PressureEntropyData(object):
         )
 
 
-    def minimise_A(self, A, r, h, energies, tol=1e-7, gamma=4./3.):
+    def minimise_A(self, A, r, h, energies, kernel, tol=1e-7, gamma=4./3.):
         """
         Finds the equlibrium value of A using the Pressure-Entropy SPH
         technique.
@@ -339,7 +346,7 @@ class PressureEntropyData(object):
                 separations = sph.separations(r[index], r)
 
                 this_A, new = pressure_entropy.A_reduced(
-                    separations, new, this_h, this_u, this_A, index, gamma
+                    separations, new, this_h, this_u, this_A, index, kernel, gamma
                 )
                 
             difference = sph.diff(old, new)

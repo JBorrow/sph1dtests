@@ -7,9 +7,11 @@ def gadget_kernel(r, h):
     + r the interparticle separation
     + h the smoothing length of the particle.
     """
+    print("You're calling the GADGET kernel! Naughty.")
+    raise AttributeError
     factor = r/h
     factor2 = factor * factor
-    prefactor = 1/(0.375 * h)
+    prefactor = 1/(0.3725 * h)
 
     if factor <= 0.5:
         poly = 1 - 6 * factor2 + 6 * factor2 * factor

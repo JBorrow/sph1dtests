@@ -13,7 +13,7 @@ def A(energy, density, gamma=4./3.):
     return energy * g_minus_1 / (density**g_minus_1) 
 
 
-def pressure(r, A, h, gamma=4./3., masses=None, kernel=gadget_kernel):
+def pressure(r, A, h, kernel, gamma=4./3., masses=None):
     """
     Calculates the pressure-entropy smoothed pressure (note this is _not_ the
     gas pressure) based on the:
@@ -54,7 +54,7 @@ def smoothed_density(A, P, gamma=4./3.):
     return (P/A)**(1/gamma)
 
 
-def A_reduced(r, A, h, energy, initial, index, gamma=4./3., tol=None, masses=None):
+def A_reduced(r, A, h, energy, initial, index, kernel, gamma=4./3., tol=None, masses=None):
     """
     Calculates the optimum value of A for the particle, with
 
@@ -76,7 +76,7 @@ def A_reduced(r, A, h, energy, initial, index, gamma=4./3., tol=None, masses=Non
         if index != -1:
             A[index] = this_A
 
-        P_sum = pressure(r, A, h, gamma, masses)
+        P_sum = pressure(r, A, h, kernel, gamma, masses)
         P_calc = this_A * ((energy/this_A) * gamma_minus_1)**(gamma/gamma_minus_1)
 
         return 1 - P_sum/P_calc
