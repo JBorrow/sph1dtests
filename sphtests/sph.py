@@ -1,5 +1,6 @@
 from numpy import pi, exp, sqrt
 
+
 def gadget_kernel(r, h):
     """
     The standard GADGET Kernel, with 
@@ -71,12 +72,43 @@ def gaussian_kernel(r, h):
     + r the interparticle separation
     + h the smoothing length of the particle
     """
-    prefactor = 1/sqrt(2 * pi * h)
-    exponential = exp(-0.5 * (r / h)**2)
+    sigma = h/2
+    prefactor = 1/sqrt(2 * pi * sigma)
+    exponential = exp(-0.5 * (r / sigma)**2)
 
     return prefactor * exponential
 
-        
+
+def tophat_kernel(r, h):
+    """
+    A tophat kernel. Possibly the worst kernel you can have.
+
+    + r the interparticle separation
+    + h the smoothing length of the particle
+    """
+    prefactor = 1/(2 * h)
+
+    if r/h < 1:
+        return prefactor
+    else:
+        return 0
+
+
+def triangle_kernel(r, h):
+    """
+    Triangle kernel.
+
+    + r the interparticle separation
+    + h the smoothing length of the particle
+    """
+    prefactor = 1/h
+
+    if r/h < 1:
+        return (1 - r/h) * prefactor
+    else:
+        return 0
+
+
 def separations(radius, radii):
     """
     Finds the separation between all in the radii list and the radius that is
