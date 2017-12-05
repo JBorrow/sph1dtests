@@ -12,7 +12,7 @@ def density(r, h, masses=None, kernel=gadget_kernel):
     + kernel, a callable with arguments (r, h). Defaults to GADGET.
     """
     
-    def kernel_at_h(radius): return kernel(radius, h)
+    def kernel_at_h(radius): return kernel(abs(radius), h)
 
     weights = map(kernel_at_h, r)
 
@@ -36,9 +36,9 @@ def h(r, initial=1., mass=1, eta=0.84, tol=None, masses=None, kernel=gadget_kern
     + masses are the masses of the other particles
     """
     def to_reduce(this_h):
-        dens = density(r, this_h, masses, kernel=kernel)
+        dens = density(r, abs(this_h), masses, kernel=kernel)
         
-        return (this_h / (mass * eta)) * dens - 1
+        return this_h - eta * mass / dens
 
     if tol is not None:
         fitted = root(
