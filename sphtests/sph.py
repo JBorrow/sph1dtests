@@ -73,7 +73,7 @@ def gaussian_kernel(r, h):
     + h the smoothing length of the particle
     """
     sigma = h/2
-    prefactor = 1/sqrt(2 * pi * sigma)
+    prefactor = 1/sqrt(2 * pi * sigma**2)
     exponential = exp(-0.5 * (r / sigma)**2)
 
     return prefactor * exponential
